@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arknoid</title>
+</head>
+<style>
+    body {
+        background-color: #111;
+    }
+
+    canvas {
+        border: 4px solid #fff;
+        border-bottom: transparent;
+        background: url('./bkg.png') repeat;
+        margin: 0 auto;
+        display: block;
+    }
+</style>
+<body>
+    <canvas></canvas>
+
+    <img hidden id = "sprite" src="./sprite.png" alt="">
+    <img hidden id = "bricks" src="./bricks.png" alt="">
+
+    <script>
+        // Obtenemos el canvas para trabajar con él
+        const canvas = document.querySelector('canvas');
+        // Le damos un contexto
+        const ctx = canvas.getContext('2d');
+        const $sprite = document.querySelector('#sprite');
+        const $bricks = document.querySelector('#bricks');
+
+
+        // Determinamos el tamaño del canvas
+        canvas.height = 400;
+        canvas.width = 448;
+
+        // VARIABLES DEL JUEGO
+        // Variables de la pelota
+        const ballRadius = 4;
+
+        // Posición
+        let x = canvas.width / 2;
+        let y = canvas.height - 30;
+
+        // velocidad
+        let dx = 2;
+        let dy = -2;
+
+        // Variables del paddle
+        const paddleHeight = 10;
+        const paddleWidth = 50;
+
+        let paddleX = (canvas.width - paddleWidth) / 2;
+        let paddleY = canvas.height - paddleHeight - 10;
+
+        let rightPressed = false;
+        let leftPressed =  false;
+
+        function drawBall()  {
+            // Indicamos que vamos a empezar a dibujar
+            ctx.beginPath();
+            ctx.arc(x, y, ballRadius, 0, Math.PI * 2) // Dibujamos la pelota
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.closePath();
+        };
+
+        function ballMovement() {
+           // Colisiones laterales
+           const isBallSameXAsPaddle =
+            x > paddleX &&
+            x < paddleX + paddleWidth
+
+           const IsBallTouchingPaddle =
+            y + dy > paddleY
+
+            
+           if (
+            (x + dx) > canvas.width - ballRadius || //Lateral derecho
+            (x + dx) < ballRadius // lateral izquierda
+           ) {
+            dx = -dx;
+           };
+
+           // colision superior
+           if ((y + dy) < ballRadius) {
+            dy = -dy
+           };
+
+           // Si la pelota toca el suelo
+           if (isBallSameXAsPaddle && IsBallTouchingPaddle) {
+                dy = -dy
+           } else if (y + dy > canvas.height - ballRadius){
+            console.log('Game Over')
+            document.location.reload()
+           }
+
+           // Movemos la pelota
+           x += dx
+           y += dy
+         };
+        
+        function paddleMovement() {
+            if (rightPressed && paddleX < canvas.width - paddleWidth) {
+                paddleX += 5
+            } else if (leftPressed && paddleX > 0) {
+                paddleX -= 5
+            }
+        };
+
+        function drawBrick() {};
+
+        function drawPaddle() {
+            ctx.fillStyle = '#308446'
+            ctx.fillRect(
+                paddleX,    // Coordenada x
+                paddleY,    // Coordenada Y
+                paddleWidth,    // Ancho de la dibujo
+                paddleHeight    // Largo de la dibujo
+            );
+
+            // ctx.drawImage(
+            //     // la imagen
+            //     // el cipX
+            //     // el clipY
+            // )
+        };
+
+        function collisionDetection() {};
+
+        
+
+        function cleanCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+        }
+
+        function initEvent (){
+            document.addEventListener('keydown', keyDownHandler);
+            document.addEventListener('keyup', keyUpHandler);
+
+            function keyDownHandler (event) {
+                const { key } = event
+                if (key === 'Right' || key === 'ArrowRight' || key === 'd') {
+                    rightPressed = true;
+                } else if (key === 'Left' || key === 'ArrowLeft' || key === 'a') {
+                    leftPressed = true
+                };
+            };
+
+            function keyUpHandler (event) {
+                const { key } = event
+                if (key === 'Right' || key === 'ArrowRight' || key === 'd') {
+                    rightPressed = false;
+                } else if (key === 'Left' || key === 'ArrowLeft' || key === 'a') {
+                    leftPressed = false;
+                }
+            }
+        }
+        // Esta función se encargará de dibujar todo
+        function draw(){
+            cleanCanvas()
+            // Funciones encargadas de dibujar cada elemento
+            drawBall();
+            drawBrick();
+            drawPaddle();
+
+            // Colisiones y movimientos
+            collisionDetection();
+            ballMovement();
+            paddleMovement()
+
+            window.requestAnimationFrame(draw)
+        }
+
+        draw();
+        initEvent();
+    </script>
+</body>
+</html>
